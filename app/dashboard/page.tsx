@@ -321,7 +321,7 @@ export default function DashboardPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 text-blue-600 hover:underline truncate max-w-[100px]"
-                              title={investment.transaction_id}
+                              title={investment.transaction_id ?? undefined}
                             >
                               {shortenHash(investment.transaction_id)}
                               <ExternalLink className="h-3 w-3" />
