@@ -298,7 +298,7 @@ export default function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {investments.slice(0, 5).map((investment) => {
+                  {investments.slice(0, 5).map((investment:any) => {
                     const hasTx = !!investment.transaction_id;
                     return (
                       <TableRow key={investment.id}>
