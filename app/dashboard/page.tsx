@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { TrendingUp, Wallet, AlertCircle, ArrowRight, Egg, Calendar, ExternalLink } from 'lucide-react';
+import { TrendingUp, Wallet, AlertCircle, ArrowRight, Egg, Calendar, ExternalLink, Coins } from 'lucide-react';
 import { supabase, type Profile, type Investment, type ProfitDistribution } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -103,8 +103,9 @@ export default function DashboardPage() {
     ? (profile.total_invested_ksh / currentTier.next) * 100
     : 100;
 
-  // Check if any investment has a transaction hash
+  // Check if any investment has transaction or mint hash
   const hasAnyTxHash = investments.some(i => !!i.transaction_id);
+  const hasAnyMintHash = investments.some(i => !!i.token_mint_tx);
 
   // Helper to shorten hash
   const shortenHash = (hash: string) => {
@@ -168,6 +169,21 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">KUKU Tokens</CardTitle>
+            <Coins className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {profile.total_shares.toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              1 KUKU = 1 hen share
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -192,22 +208,6 @@ export default function DashboardPage() {
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Expected: KSh {dailyProfit.toFixed(2)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Current Tier</CardTitle>
-            <Egg className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Badge className={currentTier.color}>{currentTier.name}</Badge>
-              <span className="text-sm font-medium">{currentTier.rate}% daily</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Daily: KSh {dailyProfit.toFixed(2)}
             </p>
           </CardContent>
         </Card>
@@ -292,14 +292,16 @@ export default function DashboardPage() {
                   <TableRow>
                     <TableHead>Date</TableHead>
                     <TableHead>Amount</TableHead>
-                    <TableHead>Shares</TableHead>
+                    <TableHead>KUKU</TableHead>
                     <TableHead>Status</TableHead>
-                    {hasAnyTxHash && <TableHead className="text-right">Tx Hash</TableHead>}
+                    {hasAnyTxHash && <TableHead className="text-right">HBAR Tx</TableHead>}
+                    {hasAnyMintHash && <TableHead className="text-right">Mint Tx</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {investments.slice(0, 5).map((investment:any) => {
+                  {investments.slice(0, 5).map((investment: any) => {
                     const hasTx = !!investment.transaction_id;
+                    const hasMint = !!investment.token_mint_tx;
                     return (
                       <TableRow key={investment.id}>
                         <TableCell className="text-sm">
@@ -308,7 +310,9 @@ export default function DashboardPage() {
                         <TableCell className="font-medium">
                           KSh {Number(investment.amount_ksh).toLocaleString()}
                         </TableCell>
-                        <TableCell>{Number(investment.total_shares).toFixed(2)}</TableCell>
+                        <TableCell className="font-mono text-green-600">
+                          {Number(investment.total_shares).toFixed(2)}
+                        </TableCell>
                         <TableCell>
                           <Badge variant={investment.status === 'completed' ? 'default' : 'secondary'}>
                             {investment.status}
@@ -321,9 +325,23 @@ export default function DashboardPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 text-blue-600 hover:underline truncate max-w-[100px]"
-                              title={investment.transaction_id ?? undefined}
+                              title={investment.transaction_id}
                             >
                               {shortenHash(investment.transaction_id)}
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          </TableCell>
+                        )}
+                        {hasAnyMintHash && hasMint && (
+                          <TableCell className="text-right font-mono text-xs">
+                            <a
+                              href={`https://hashscan.io/testnet/transaction/${investment.token_mint_tx}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-green-600 hover:underline truncate max-w-[100px]"
+                              title={investment.token_mint_tx}
+                            >
+                              {shortenHash(investment.token_mint_tx)}
                               <ExternalLink className="h-3 w-3" />
                             </a>
                           </TableCell>
