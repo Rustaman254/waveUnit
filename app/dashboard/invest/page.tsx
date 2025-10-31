@@ -159,7 +159,7 @@ export default function InvestPage() {
       toast.info('Transaction sent – waiting for confirmation…');
       const receipt = await tx.wait(1); // 1 confirmation is enough on Hedera
 
-      if (!receipt.status) throw new Error('Transaction reverted');
+      if (!receipt?.status) throw new Error('Transaction reverted');
 
       // ---- 4. record investment in Supabase ------------------------------------
       const henPrice = 700; // KSh per hen share
